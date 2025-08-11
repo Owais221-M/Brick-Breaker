@@ -1,5 +1,5 @@
 
-# **Brick Breaker Game – Java OOP Project**
+# **Brick Breaker Game – Java OOP**
 
 ## 🎯 **Overview**
 
