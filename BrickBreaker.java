@@ -4,8 +4,10 @@ import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.Random;
 
-// Abstract GameObject class
+// ABSTRACT BASE CLASS
+
 abstract class GameObject {
+    
     private int x, y, width, height;
 
     public GameObject(int x, int y, int width, int height) {
@@ -29,14 +31,14 @@ abstract class GameObject {
     protected void setHeight(int height) { this.height = height; }
 }
 
-// Entry Point
+// ENTRY POINT
 public class BrickBreaker {
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> new LevelSelectionMenu());
     }
 }
 
-// Level selection menu
+// LEVEL SELECTION MENU
 class LevelSelectionMenu extends JFrame implements ActionListener {
     private JButton easyButton, mediumButton, hardButton;
 
@@ -72,7 +74,7 @@ class LevelSelectionMenu extends JFrame implements ActionListener {
     }
 }
 
-// Game window
+// GAME WINDOW
 class GameWindow extends JFrame {
     public GameWindow(int level) {
         setTitle("Brick Breaker Game");
@@ -83,12 +85,12 @@ class GameWindow extends JFrame {
     }
 }
 
-// Main game panel
+// MAIN GAME PANEL
 class BrickBreakerGame extends JPanel implements ActionListener, KeyListener {
     private Ball ball;
     private Paddle paddle;
     private ArrayList<Brick> bricks;
-    private javax.swing.Timer timer;
+    private Timer timer;
     private int score = 0;
     private int lives = 3;
     private int level;
@@ -101,7 +103,7 @@ class BrickBreakerGame extends JPanel implements ActionListener, KeyListener {
         setPreferredSize(new Dimension(800, 600));
         setBackground(Color.DARK_GRAY);
         startLevel();
-        timer = new javax.swing.Timer(10, this);
+        timer = new Timer(10, this);
         timer.start();
         addKeyListener(this);
         setFocusable(true);
@@ -124,15 +126,10 @@ class BrickBreakerGame extends JPanel implements ActionListener, KeyListener {
         for (int i = startX; i <= endX; i += 70) {
             for (int j = 50; j <= 50 + brickRows * 30; j += 30) {
                 int type = rand.nextInt(12);
-                if (type == 0) {
-                    bricks.add(new ExplodingBrick(i, j));
-                } else if (type == 1) {
-                    bricks.add(new UnbreakableBrick(i, j));
-                } else if (type == 2) {
-                    bricks.add(new BonusBrick(i, j));
-                } else {
-                    bricks.add(new Brick(i, j, colors[rand.nextInt(colors.length)]));
-                }
+                if (type == 0) bricks.add(new ExplodingBrick(i, j));
+                else if (type == 1) bricks.add(new UnbreakableBrick(i, j));
+                else if (type == 2) bricks.add(new BonusBrick(i, j));
+                else bricks.add(new Brick(i, j, colors[rand.nextInt(colors.length)]));
             }
         }
     }
@@ -146,18 +143,11 @@ class BrickBreakerGame extends JPanel implements ActionListener, KeyListener {
             g.drawString("Game Over! Score: " + score, 250, 300);
             g.drawString("Press M to return to Menu | Press R to Restart", 150, 350);
         } else {
-            // Polymorphism by inclusion (dynamic binding)
-            try {
-                GameObject demo = (score % 2 == 0) ? new Ball(50, 50, 1) : new Paddle(60, 60);
-                demo.draw(g); // Method overridden at runtime
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
-
             ball.draw(g);
             paddle.draw(g);
             for (Brick brick : bricks) brick.draw(g);
         }
+
         g.setColor(Color.WHITE);
         g.setFont(new Font("Arial", Font.BOLD, 20));
         g.drawString("Score: " + score, 20, 30);
@@ -177,7 +167,6 @@ class BrickBreakerGame extends JPanel implements ActionListener, KeyListener {
 
     private void checkCollisions() {
         if (ball.getY() + ball.getHeight() >= paddle.getY() &&
-            ball.getY() + ball.getHeight() <= paddle.getY() + paddle.getHeight() &&
             ball.getX() + ball.getWidth() >= paddle.getX() &&
             ball.getX() <= paddle.getX() + paddle.getWidth()) {
             ball.reverseY();
@@ -195,24 +184,19 @@ class BrickBreakerGame extends JPanel implements ActionListener, KeyListener {
                 ball.reverseY();
                 score += 10;
 
-                if (brick instanceof BonusBrick) {
-                    paddle.increaseWidth(20);
-                }
+                if (brick instanceof BonusBrick) paddle.increaseWidth(20);
                 break;
             }
         }
 
         bricks.removeIf(Brick::isDestroyed);
 
-        if (bricks.isEmpty()) {
-            startLevel();
-        }
+        if (bricks.isEmpty()) startLevel();
 
         if (ball.getY() > 600) {
             lives--;
-            if (lives == 0) {
-                gameOver = true;
-            } else {
+            if (lives == 0) gameOver = true;
+            else {
                 int ballX = paddle.getX() + paddle.getWidth() / 2 - 10;
                 int ballY = paddle.getY() - 20;
                 ball = new Ball(ballX, ballY, level);
@@ -235,9 +219,7 @@ class BrickBreakerGame extends JPanel implements ActionListener, KeyListener {
                 SwingUtilities.invokeLater(() -> new LevelSelectionMenu());
                 SwingUtilities.getWindowAncestor(this).dispose();
             }
-            if (e.getKeyCode() == KeyEvent.VK_R) {
-                restartGame();
-            }
+            if (e.getKeyCode() == KeyEvent.VK_R) restartGame();
         }
 
         if (e.getKeyCode() == KeyEvent.VK_LEFT) paddle.moveLeft();
@@ -251,7 +233,7 @@ class BrickBreakerGame extends JPanel implements ActionListener, KeyListener {
     public void keyTyped(KeyEvent e) {}
 }
 
-// Ball class
+// BALL CLASS 
 class Ball extends GameObject {
     private int dx, dy;
     private final int BALL_SIZE = 20;
@@ -260,11 +242,18 @@ class Ball extends GameObject {
     public Ball(int x, int y, int level) {
         super(x, y, 20, 20);
         this.color = Color.RED;
-        if (level == 1) { this.dx = 3; this.dy = -3; }
-        else if (level == 2) { this.dx = 4; this.dy = -4; }
-        else { this.dx = 6; this.dy = -6; }
+        if (level == 1) { dx = 3; dy = -3; }
+        else if (level == 2) { dx = 4; dy = -4; }
+        else { dx = 6; dy = -6; }
     }
 
+    @Override
+    protected void setY(int y) {
+        if (y < 0) super.setY(0);
+        else super.setY(y);
+    }
+
+    @Override
     public void update() {
         setX(getX() + dx);
         setY(getY() + dy);
@@ -273,11 +262,15 @@ class Ball extends GameObject {
     }
 
     public void reverseY() { dy = -dy; }
-    public void setY(int y) { super.setY(y); }
-    public void draw(Graphics g) { g.setColor(color); g.fillOval(getX(), getY(), BALL_SIZE, BALL_SIZE); }
+
+    @Override
+    public void draw(Graphics g) {
+        g.setColor(color);
+        g.fillOval(getX(), getY(), BALL_SIZE, BALL_SIZE);
+    }
 }
 
-// Paddle class
+// PADDLE CLASS 
 class Paddle extends GameObject {
     private int dx;
     private final int SPEED = 7;
@@ -291,23 +284,29 @@ class Paddle extends GameObject {
     public void moveLeft() { dx = -SPEED; }
     public void moveRight() { dx = SPEED; }
     public void stop() { dx = 0; }
+
+    public void move() { dx = SPEED; }
+    public void move(int customSpeed) { dx = customSpeed; }
+    public void move(boolean boost) { dx = boost ? SPEED * 2 : SPEED; }
+
+    @Override
     public void update() {
         setX(getX() + dx);
         if (getX() < 0) setX(0);
         if (getX() > 680) setX(680);
     }
 
+    @Override
     public void draw(Graphics g) {
         g.setColor(color);
         g.fillRoundRect(getX(), getY(), getWidth(), getHeight(), 10, 10);
     }
 
-    public void increaseWidth(int value) {
-        setWidth(getWidth() + value);
-    }
+    public void increaseWidth(int value) { setWidth(getWidth() + value); }
+    public void increaseWidth() { setWidth(getWidth() + 10); }
 }
 
-// Brick class
+// BRICK CLASSES 
 class Brick extends GameObject {
     private boolean isDestroyed = false;
     private Color color;
@@ -320,6 +319,7 @@ class Brick extends GameObject {
     public boolean isDestroyed() { return isDestroyed; }
     public void destroy() { isDestroyed = true; }
 
+    @Override
     public void draw(Graphics g) {
         if (!isDestroyed) {
             g.setColor(color);
@@ -329,10 +329,10 @@ class Brick extends GameObject {
         }
     }
 
+    @Override
     public void update() {}
 }
 
-// Exploding brick subclass
 class ExplodingBrick extends Brick {
     public ExplodingBrick(int x, int y) {
         super(x, y, Color.MAGENTA);
@@ -342,12 +342,11 @@ class ExplodingBrick extends Brick {
     public void destroy() {
         if (!isDestroyed()) {
             super.destroy();
-            System.out.println("💥 Explosion! Nearby bricks are damaged!");
+            System.out.println("Explosion triggered!");
         }
     }
 }
 
-// Unbreakable brick subclass
 class UnbreakableBrick extends Brick {
     public UnbreakableBrick(int x, int y) {
         super(x, y, Color.GRAY);
@@ -355,11 +354,10 @@ class UnbreakableBrick extends Brick {
 
     @Override
     public void destroy() {
-        System.out.println("🚫 This brick is unbreakable!");
+        System.out.println("This brick is unbreakable!");
     }
 }
 
-// Bonus brick subclass
 class BonusBrick extends Brick {
     public BonusBrick(int x, int y) {
         super(x, y, Color.PINK);
@@ -368,9 +366,6 @@ class BonusBrick extends Brick {
     @Override
     public void destroy() {
         super.destroy();
-        System.out.println("🎁 Bonus! Paddle size increased.");
+        System.out.println("Bonus activated!");
     }
 }
-
-
-
